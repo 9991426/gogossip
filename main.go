@@ -7,6 +7,7 @@ import (
 )
 
 var infected int = 0
+var joon int = 2
 
 func gossip_node(node_pos int, nodes [100]chan int, start chan struct{}, m *sync.Mutex) {
   <-start // wait for all nodes to initialize
