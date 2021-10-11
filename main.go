@@ -1,53 +1,72 @@
 package main
 
 import (
-  "fmt"
+  // "fmt"
   "math/rand"
   "sync"
+  "time"
 )
 
-var infected int = 0
-var joon int = 2
+var num_infected int = 0
+const node_num int = 2500
 
-func gossip_node(node_pos int, nodes [100]chan int, start chan struct{}, m *sync.Mutex) {
-  <-start // wait for all nodes to initialize
-  fmt.Println("Initializing node", node_pos)
-  status := 0
-  rand_pos := rand.Intn(10)
-
+func gossip_push(node_pos int, nodes *[node_num]chan bool, start chan struct{}, m *sync.Mutex, w *sync.WaitGroup) {
+  _, _ = <-start // wait for all nodes to initialize
+  infected := false
+  
   for {
-    x := <- nodes[node_pos]  
-    if x == 1 {
-      nodes[rand_pos] <- 1
+    if infected {
+      rand_pos := node_pos
+      for rand_pos == node_pos {
+        rand_pos = rand.Intn(node_num)
+      }
+
+      select {
+        case nodes[rand_pos] <- infected:
+        default:
+      }
     }
 
-    if status == 0 && x == 1 {
-      status = 1
-      m.Lock()
-      infected += 1
-      fmt.Println("Infected Nodes:", infected)
-      m.Unlock()
+    select {
+      case new_infected := <- nodes[node_pos]:
+        if !infected && new_infected {
+          infected = new_infected
+          m.Lock()
+          num_infected += 1
+          m.Unlock()
+        }
+      default:
     }
 
-    if infected == 0 {
-      return
+    if num_infected == node_num {
+      break
     }
+
+    time.Sleep(time.Millisecond)
   }
+
+  w.Done()
 }
 
 func main() {
   var m sync.Mutex
+  var w sync.WaitGroup
 
   start := make(chan struct{})
 
-  var nodes [100]chan int
-  for i := 0; i < 100; i++ {
-    nodes[i] = make(chan int)
+  var nodes [node_num]chan bool
+  for i := 0; i < node_num; i++ {
+    nodes[i] = make(chan bool, 1)
   }
 
-  for i := 0; i < 100; i++ {
-    go gossip_node(i, nodes, start, &m)
+  for i := 0; i < node_num; i++ {
+    w.Add(1)
+    go gossip_push(i, &nodes, start, &m, &w)
   }
 
   close(start)
+
+  nodes[0] <- true
+
+  w.Wait()
 }
