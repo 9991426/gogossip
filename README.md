@@ -13,6 +13,11 @@ In a terminal, run:
 
 `go run . [push|pull|pushpull] [-n nodes] [-i infected] [-v]`
 
+Example runs
+------------
+
+![Screenshot of example runs](example.png)
+
 Description
 -----------
 
