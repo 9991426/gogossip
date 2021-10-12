@@ -41,7 +41,10 @@ func main() {
 	flaggy.AttachSubcommand(pushpull_alg, 1)
 
 	flaggy.DefaultParser.DisableShowVersionWithVersion()
-	flaggy.Parse()
+	err := flaggy.DefaultParser.Parse()
+	if err != nil {
+		flaggy.ShowHelpAndExit(fmt.Sprintf("%v", err))
+	}
 
 	should_push := push_alg.Used || pushpull_alg.Used
 	should_pull := pull_alg.Used || pushpull_alg.Used

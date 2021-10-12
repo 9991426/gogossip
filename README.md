@@ -117,3 +117,9 @@ gossip algorithm until the network is fully infected. If push is enabled and the
 node is infected, it attempts to infect some other random node using
 `infect_other`. If pull is enabled and the node is not infected, it attempts to
 request the infection status from some other random node using `request_other`.
+
+#### flaggy
+
+Flaggy was cloned from [integrii/flaggy](https://github.com/integrii/flaggy),
+but modified to return an error if parsing fails. This lets us show an error
+message if a flag is not parsed correctly.
