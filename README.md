@@ -16,7 +16,7 @@ In a terminal, run:
 Example runs
 ------------
 
-![Screenshot of example runs](example.png)
+![Screenshot of example runs](img/example.png)
 
 Description
 -----------
@@ -67,7 +67,7 @@ How it works
 
 ### Overview
 
-![Diagram showing how gogossip works.](diagram.png)
+![Diagram showing how gogossip works.](img/diagram.png)
 
 ### Files
 
