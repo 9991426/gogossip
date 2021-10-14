@@ -18,11 +18,6 @@ In a terminal, run:
 
 `go run . [push|pull|pushpull] [-n nodes] [-i infected] [-v]`
 
-Example runs
-------------
-
-![Screenshot of example runs](img/example.png)
-
 Options
 -------
 
@@ -60,6 +55,11 @@ to retrieve infection from one random node.
 Use the "push-pull" gossip algorithm. In each round, each infected node attempts
 to infect one random node. Then, each susceptible node attempts to retrieve
 infection from one random node.
+
+Example runs
+------------
+
+![Screenshot of example runs](img/example.png)
 
 How it works
 ------------
