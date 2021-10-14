@@ -58,7 +58,7 @@ to retrieve infection from one random node.
 
 #### pushpull
 
-Use the "pull-pull" gossip algorithm. In each round, each infected node attempts
+Use the "push-pull" gossip algorithm. In each round, each infected node attempts
 to infect one random node. Then, each susceptible node attempts to retrieve
 infection from one random node.
 
