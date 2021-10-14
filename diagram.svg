@@ -26,13 +26,13 @@
      inkscape:pagecheckerboard="false"
      inkscape:document-units="mm"
      showgrid="false"
-     inkscape:zoom="0.280633"
-     inkscape:cx="497.0905"
-     inkscape:cy="1090.3921"
-     inkscape:window-width="1892"
-     inkscape:window-height="1007"
-     inkscape:window-x="12"
-     inkscape:window-y="57"
+     inkscape:zoom="1.122532"
+     inkscape:cx="342.52921"
+     inkscape:cy="1899.2777"
+     inkscape:window-width="1920"
+     inkscape:window-height="1035"
+     inkscape:window-x="0"
+     inkscape:window-y="45"
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1"
      fit-margin-top="0"
@@ -497,7 +497,7 @@
     <rect
        style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;paint-order:markers stroke fill"
        id="rect45971"
-       width="50.523808"
+       width="50.523998"
        height="21.11027"
        x="170.74924"
        y="294.61761" />
@@ -516,7 +516,9 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05556px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle;stroke-width:0.264583"
          x="195.9698"
          y="311.10172"
-         id="tspan50679">node</tspan></text>
+         id="tspan50679">node using <tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.35px;font-family:Iosevka;-inkscape-font-specification:Iosevka"
+   id="tspan2160">set</tspan></tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 196.01104,315.93514 v 22.63672"
@@ -661,7 +663,9 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05556px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle;stroke-width:0.264583"
          x="195.9698"
          y="366.66415"
-         id="tspan58831">node</tspan></text>
+         id="tspan58831">node using <tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.35px;font-family:Iosevka;-inkscape-font-specification:Iosevka"
+   id="tspan4328">req</tspan></tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="m 196.01104,371.49769 v 22.63672"
@@ -1104,11 +1108,11 @@
          y="537.85779"
          id="tspan84867">requestor ID</tspan></text>
     <rect
-       style="fill:#ffffff;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;paint-order:markers stroke fill"
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.999997;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;paint-order:markers stroke fill"
        id="rect80977"
-       width="57.606842"
+       width="65.380272"
        height="21.11027"
-       x="142.57094"
+       x="138.68422"
        y="553.71808" />
     <text
        xml:space="preserve"
@@ -1120,12 +1124,14 @@
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05556px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle;stroke-width:0.264583"
          x="171.33649"
          y="563.08984"
-         id="tspan80981">Send infection</tspan><tspan
+         id="tspan82213">Send infection status</tspan><tspan
          sodipodi:role="line"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05556px;font-family:Calibri;-inkscape-font-specification:Calibri;text-align:center;text-anchor:middle;stroke-width:0.264583"
          x="171.33649"
          y="570.21429"
-         id="tspan82213">status</tspan></text>
+         id="tspan10398">to requestor's <tspan
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:6.35px;font-family:Iosevka;-inkscape-font-specification:Iosevka"
+   id="tspan11240">set</tspan></tspan></text>
     <path
        style="fill:none;stroke:#000000;stroke-width:1;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#Arrow1Send)"
        d="m 171.37436,544.59892 v 6.05117"
