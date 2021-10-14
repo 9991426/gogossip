@@ -18,25 +18,6 @@ In a terminal, run:
 
 `go run . [push|pull|pushpull] [-n nodes] [-i infected] [-v]`
 
-Options
--------
-
-#### -h, --help
-
-Displays help with available flag, subcommand, and positional value parameters.
-
-#### -n _nodes_, --nodes nodes
-
-Sets the number of nodes in the network. (default: 100)
-
-#### -i _infected_, --infected _infected_
-
-Sets the number of initially infected nodes in the network. (default: 1)
-
-#### -v, --verbose
-
-Print additional transmission information for debugging.
-
 Commands
 --------
 
@@ -55,6 +36,25 @@ to retrieve infection from one random node.
 Use the "push-pull" gossip algorithm. In each round, each infected node attempts
 to infect one random node. Then, each susceptible node attempts to retrieve
 infection from one random node.
+
+Options
+-------
+
+#### -h, --help
+
+Displays help with available flag, subcommand, and positional value parameters.
+
+#### -n _nodes_, --nodes nodes
+
+Sets the number of nodes in the network. (default: 100)
+
+#### -i _infected_, --infected _infected_
+
+Sets the number of initially infected nodes in the network. (default: 1)
+
+#### -v, --verbose
+
+Print additional transmission information for debugging.
 
 Example runs
 ------------
