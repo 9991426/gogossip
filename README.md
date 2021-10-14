@@ -5,6 +5,11 @@ _Gossip simulator_
 
 David Shen, Jack Wiseman, Joon Park
 
+Description
+-----------
+
+**gogossip** uses goroutines to simulate push, pull, and push-pull gossip
+algorithms with a configurable number of nodes and initially infected nodes.
 
 Usage
 -----
@@ -17,12 +22,6 @@ Example runs
 ------------
 
 ![Screenshot of example runs](img/example.png)
-
-Description
------------
-
-**gogossip** uses goroutines to simulate push, pull, and push-pull gossip
-algorithms with a configurable number of nodes and initially infected nodes.
 
 Options
 -------
