@@ -6,9 +6,12 @@ import (
 )
 
 type Node struct {
-	node_pos int
-	infected bool
-	network  *Network
+	node_pos       int
+	infected       bool
+	phase_infected bool
+	stop_phase     chan struct{}
+	num_rounds     int
+	network        *Network
 }
 
 // done calls done on the network's waitgroup.
@@ -18,16 +21,85 @@ func (n *Node) done() {
 
 // infect sets the current node to infected, and tells the network to increment
 // the number of infected nodes.
-func (n *Node) infect() {
+func (n *Node) infect(infected bool) {
+	if n.infected || !infected {
+		return
+	}
+
+	dbgPrint(1, n.node_pos, "I")
 	n.infected = true
 
 	n.network.increment_infected()
 }
 
-// infect_other attempts to infect other_node. Returns whether the push was
+func (n *Node) infect_rand(node_num int) {
+	if !n.network.async {
+		defer n.network.w_phase.Done()
+	}
+
+	if n.infected {
+		rand_pos := n.node_pos
+
+		// Generate a random position that is not the same as the current node's.
+		for rand_pos == n.node_pos {
+			rand_pos = rand.Intn(node_num)
+		}
+
+		if n.network.async {
+			n.infect_other_async(rand_pos)
+		} else {
+			n.infect_other_sync(rand_pos)
+		}
+	}
+}
+
+func (n *Node) request_rand(node_num int) {
+	if !n.network.async {
+		defer n.network.w_phase.Done()
+	}
+
+	if !n.infected {
+		rand_pos := n.node_pos
+
+		// Generate a random position that is not the same as the current node's.
+		for rand_pos == n.node_pos {
+			rand_pos = rand.Intn(node_num)
+		}
+
+		if n.network.async {
+			n.request_other_async(rand_pos)
+		} else {
+			n.request_other_sync(rand_pos)
+		}
+	}
+}
+
+// infect_other_sync pushes its phase infection status to other_node.
+func (n *Node) infect_other_sync(other_node int) bool {
+	dbgPrint(1, n.node_pos, "->", other_node)
+	n.network.channels[other_node].set <- n.phase_infected
+	return true
+}
+
+// request_other_sync pulls other_node's infection status and immediately
+// replaces it for other readers.
+func (n *Node) request_other_sync(other_node int) bool {
+	dbgPrint(1, n.node_pos, "<-", other_node)
+	dbgPrint(2, other_node, len(n.network.channels[other_node].set))
+	infected := <-n.network.channels[other_node].set
+	dbgPrint(2, other_node, len(n.network.channels[other_node].set))
+	n.network.channels[other_node].set <- infected
+	dbgPrint(2, other_node, len(n.network.channels[other_node].set))
+
+	n.infect(infected)
+
+	return true
+}
+
+// infect_other_async attempts to infect other_node. Returns whether the push was
 // successful. The push could fail if other_node's set buffer is full.
-func (n *Node) infect_other(other_node int) bool {
-	dbgPrint(n.node_pos, "->", other_node)
+func (n *Node) infect_other_async(other_node int) bool {
+	dbgPrint(1, n.node_pos, "->", other_node)
 	select {
 	case n.network.channels[other_node].set <- n.infected:
 		return true
@@ -36,10 +108,10 @@ func (n *Node) infect_other(other_node int) bool {
 	}
 }
 
-// request_other attempts to request an infection status from other_node.
+// request_other_sync attempts to request an infection status from other_node.
 // Returns whether the request was successful.
-func (n *Node) request_other(other_node int) bool {
-	dbgPrint(n.node_pos, "<-", other_node)
+func (n *Node) request_other_async(other_node int) bool {
+	dbgPrint(1, n.node_pos, "<-", other_node)
 	select {
 	case n.network.channels[other_node].req <- n.node_pos:
 		return true
@@ -49,24 +121,27 @@ func (n *Node) request_other(other_node int) bool {
 }
 
 // query_set repeatedly reads from the set channel, and infects the current node
-// if needed.
+// if needed. Used in either sync or async.
 func (n *Node) query_set() {
+	dbgPrint(2, n.node_pos, "start query")
 	for {
-		infected, ok := <-n.network.channels[n.node_pos].set 
+		select {
+		case <-n.stop_phase:
+			dbgPrint(2, n.node_pos, "stop query")
+			return
+		case infected, ok := <-n.network.channels[n.node_pos].set:
+			if !ok {
+				return
+			}
 
-		if !ok {
-			break
-		}
-
-		dbgPrint(n.node_pos, "<S", infected)
-		if !n.infected && infected {
-			n.infect()
+			dbgPrint(1, n.node_pos, "<S", infected)
+			n.infect(infected)
 		}
 	}
 }
 
 // query_req repeatedly reads from the req channel, and responds with an
-// infection set if the current node is infected.
+// infection set if the current node is infected. Used only in async.
 func (n *Node) query_req() {
 	for {
 		requestor, ok := <-n.network.channels[n.node_pos].req
@@ -75,9 +150,28 @@ func (n *Node) query_req() {
 			break
 		}
 
-		dbgPrint(n.node_pos, "<R", requestor)
+		dbgPrint(1, n.node_pos, "<R", requestor)
 		if n.infected {
-			n.infect_other(requestor)
+			n.infect_other_async(requestor)
+		}
+	}
+}
+
+// cleanup clears stops running phase handlers and clears the buffer of the set
+// channel. Used only in sync.
+func (n *Node) cleanup(node_num int, stop bool) {
+	defer n.network.w_phase.Done()
+	dbgPrint(2, n.node_pos, "stop phase")
+
+	if stop {
+		n.stop_phase <- struct{}{}
+	}
+
+	for {
+		select {
+		case <-n.network.channels[n.node_pos].set:
+		default:
+			return
 		}
 	}
 }
@@ -86,51 +180,119 @@ func (n *Node) query_req() {
 // in the network.
 func (n *Node) Gossip() {
 	defer n.done()
-	go n.query_set()
-	go n.query_req()
 
 	node_num := len(n.network.channels)
+	async := n.network.async
+	var starttime time.Time
+	var pushdur time.Duration = 0
+	var pushcdur time.Duration = 0
+	var pulldur time.Duration = 0
+	var pullcdur time.Duration = 0
+
+	if async {
+		go n.query_set()
+		go n.query_req()
+	}
 
 	for {
+		n.num_rounds += 1
+
 		if n.network.should_push {
 			// If the push is enabled and the node is infected, try infecting a random
 			// node.
-			if n.infected {
-				for {
-					rand_pos := rand.Intn(node_num)
+			if async {
+				n.infect_rand(node_num)
+			} else {
+				dbgPrint(2, n.node_pos, "start push")
 
-					// Generate a random position that is not the same as the current node's.
-					if rand_pos == n.node_pos {
-						continue
-					}
+				// Save the infected value to the current phase infected value.
+				n.phase_infected = n.infected
 
-					n.infect_other(rand_pos)
-					break
+				// Add the number of nodes to the waitgroup.
+				n.network.w_phase.Add(node_num)
+
+				// Push infection to other nodes.
+				if n.node_pos == 0 {
+					starttime = time.Now()
+				}
+				go n.query_set()
+				go n.infect_rand(node_num)
+
+				dbgPrint(2, n.node_pos, "wait a")
+				n.network.w_phase.Wait()
+				if n.node_pos == 0 {
+					pushdur += time.Since(starttime)
+					starttime = time.Now()
+				}
+
+				// Clean up the channels.
+				n.network.w_phase.Add(node_num)
+				go n.cleanup(node_num, true)
+				dbgPrint(2, n.node_pos, "wait cleanup")
+				n.network.w_phase.Wait()
+				if n.node_pos == 0 {
+					pushcdur += time.Since(starttime)
+					starttime = time.Now()
 				}
 			}
 		}
 
 		if n.network.should_pull {
-			if !n.infected {
-				for {
-					rand_pos := rand.Intn(node_num)
+			if async {
+				n.request_rand(node_num)
+			} else {
+				dbgPrint(2, n.node_pos, "start pull")
 
-					// Generate a random position that is not the same as the current node's.
-					if rand_pos == n.node_pos {
-						continue
-					}
+				// Push the current infected value onto the set channel. This will be
+				// replaced each time it is read.
+				n.network.channels[n.node_pos].set <- n.infected
 
-					n.request_other(rand_pos)
-					break
+				// Add the number of nodes to the waitgroup.
+				n.network.w_phase.Add(node_num)
+
+				// Pull infection from other nodes.
+				if n.node_pos == 0 {
+					starttime = time.Now()
+				}
+				go n.request_rand(node_num)
+
+				dbgPrint(2, n.node_pos, "wait d")
+				n.network.w_phase.Wait()
+				if n.node_pos == 0 {
+					pulldur += time.Since(starttime)
+					starttime = time.Now()
+				}
+
+				// Clean up the channels.
+				n.network.w_phase.Add(node_num)
+				go n.cleanup(node_num, false)
+				dbgPrint(2, n.node_pos, "wait cleanup")
+				n.network.w_phase.Wait()
+				if n.node_pos == 0 {
+					pullcdur += time.Since(starttime)
+					starttime = time.Now()
 				}
 			}
 		}
 
-		// Exit if the network is fully infected
-		if n.network.saturated {
-			break
+		if async {
+			time.Sleep(time.Millisecond)
 		}
 
-		time.Sleep(time.Millisecond)
+		// Exit if the network is fully infected
+		n.network.lock.RLock()
+		if n.network.saturated {
+			dbgPrint(2, n.node_pos, "FULLY SATURATED")
+			n.network.lock.RUnlock()
+			break
+		}
+		n.network.lock.RUnlock()
+	}
+
+	if n.node_pos == 0 {
+		dbgPrint(1, "push", pushdur)
+		dbgPrint(1, "push clean", pushcdur)
+		dbgPrint(1, "pull", pulldur)
+		dbgPrint(1, "pull clean", pullcdur)
 	}
 }

@@ -37,6 +37,10 @@ Use the "push-pull" gossip algorithm. In each round, each infected node attempts
 to infect one random node. Then, each susceptible node attempts to retrieve
 infection from one random node.
 
+#### bench
+
+Run the benchmark configurations used in the performance report.
+
 Options
 -------
 
@@ -52,9 +56,22 @@ Sets the number of nodes in the network. (default: 100)
 
 Sets the number of initially infected nodes in the network. (default: 1)
 
+#### -a, --async
+
+Use an asynchronous network. (default: leaderless synchronous network)
+
+#### -l, --leader
+
+Use a synchronous network with a leader. Takes precedence over **-a**.
+(default: leaderless synchronous network)
+
 #### -v, --verbose
 
 Print additional transmission information for debugging.
+
+#### -vv, --vverbose
+
+Print even more transmission information for debugging.
 
 Example runs
 ------------
